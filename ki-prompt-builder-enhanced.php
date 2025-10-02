@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: KI Prompt Builder Enhanced
- * Description: Professioneller Prompt Builder mit KI-Optimierung, Anti-KI-Erkennung und erweiterten akademischen Optionen
- * Version: 11.1.0
+ * Description: Professioneller Prompt Builder mit KI-Optimierung, Anti-KI-Erkennung, Gender-Optionen und erweiterten akademischen Optionen
+ * Version: 11.2.0
  * Author: Monolox.de
  */
 
@@ -101,6 +101,9 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
 
 /* Citation Info Box */
 .kpb-citation-info { background: #f0f8ff; border: 1px solid #b8daff; border-radius: 6px; padding: 12px; margin-top: 10px; font-size: 0.85rem; color: #004085; }
+
+/* Gender Info Box */
+.kpb-gender-info { background: #f3e5ff; border: 1px solid #d4b5ff; border-radius: 6px; padding: 12px; margin-top: 10px; font-size: 0.85rem; color: #5a00a3; }
 
 /* KI Maskierung Info */
 .kpb-mask-info { background: #fff5f5; border: 1px solid #fed7d7; border-radius: 6px; padding: 15px; margin-top: 15px; }
@@ -286,7 +289,7 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
             </div>
         </div>
 
-        <!-- Step 4: Format & Stil (erweitert) -->
+        <!-- Step 4: Format & Stil (erweitert mit Gender-Optionen) -->
         <div class="kpb-step-panel" data-step="4">
             <h2 class="kpb-step-title">Format und Stil festlegen</h2>
             
@@ -325,6 +328,57 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
                         <div class="kpb-option-title">🤝 Du-Form</div>
                         <div class="kpb-option-desc">Persönlich, nahbar</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Gender-Optionen (nur bei Deutsch) NEU -->
+            <div id="gender-section" style="display: none;">
+                <label class="kpb-form-label">Gender-Schreibweise:</label>
+                <div class="kpb-options-grid" style="margin-bottom: 30px;">
+                    <div class="kpb-option-card" onclick="selectOption(this, 'gender', 'Gendersternchen')">
+                        <input type="radio" name="gender">
+                        <div class="kpb-option-title">⭐ Sternchen</div>
+                        <div class="kpb-option-desc">Mitarbeiter*innen</div>
+                    </div>
+                    <div class="kpb-option-card" onclick="selectOption(this, 'gender', 'Doppelpunkt')">
+                        <input type="radio" name="gender">
+                        <div class="kpb-option-title">: Doppelpunkt</div>
+                        <div class="kpb-option-desc">Mitarbeiter:innen</div>
+                    </div>
+                    <div class="kpb-option-card" onclick="selectOption(this, 'gender', 'Unterstrich')">
+                        <input type="radio" name="gender">
+                        <div class="kpb-option-title">_ Unterstrich</div>
+                        <div class="kpb-option-desc">Mitarbeiter_innen</div>
+                    </div>
+                    <div class="kpb-option-card" onclick="selectOption(this, 'gender', 'Binnen-I')">
+                        <input type="radio" name="gender">
+                        <div class="kpb-option-title">I Binnen-I</div>
+                        <div class="kpb-option-desc">MitarbeiterInnen</div>
+                    </div>
+                    <div class="kpb-option-card" onclick="selectOption(this, 'gender', 'Doppelnennung')">
+                        <input type="radio" name="gender">
+                        <div class="kpb-option-title">👫 Doppelnennung</div>
+                        <div class="kpb-option-desc">Mitarbeiterinnen und Mitarbeiter</div>
+                    </div>
+                    <div class="kpb-option-card" onclick="selectOption(this, 'gender', 'Neutrale Formulierung')">
+                        <input type="radio" name="gender">
+                        <div class="kpb-option-title">🔄 Neutral</div>
+                        <div class="kpb-option-desc">Mitarbeitende, Studierende</div>
+                    </div>
+                    <div class="kpb-option-card" onclick="selectOption(this, 'gender', 'Generisches Maskulinum mit Erklärung')">
+                        <input type="radio" name="gender">
+                        <div class="kpb-option-title">📝 Mit Erklärung</div>
+                        <div class="kpb-option-desc">Mitarbeiter (m/w/d)</div>
+                    </div>
+                    <div class="kpb-option-card" onclick="selectOption(this, 'gender', 'Keine Genderung')">
+                        <input type="radio" name="gender">
+                        <div class="kpb-option-title">⭕ Ohne</div>
+                        <div class="kpb-option-desc">Standardform</div>
+                    </div>
+                </div>
+                
+                <div class="kpb-gender-info" id="gender-info" style="display: none;">
+                    <!-- Wird dynamisch gefüllt -->
                 </div>
             </div>
 
@@ -468,6 +522,7 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
             <input type="hidden" id="field-style">
             <input type="hidden" id="field-language">
             <input type="hidden" id="field-anrede">
+            <input type="hidden" id="field-gender">
             <input type="hidden" id="field-citation">
             <input type="hidden" id="field-source-position">
             
@@ -643,6 +698,18 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
             'IEEE': 'IEEE-Stil: Numerische Referenzen in eckigen Klammern [1]. Beispiel: Diese Methode [1] wurde erweitert [2].'
         };
         
+        // Gender-Informationen NEU
+        window.genderInfo = {
+            'Gendersternchen': '<strong>Gendersternchen (*)</strong>: Die weitverbreitete Form. Beispiele: Mitarbeiter*innen, Kolleg*innen, Expert*innen. Barrierefrei für Screenreader.',
+            'Doppelpunkt': '<strong>Gender-Doppelpunkt (:)</strong>: Moderne, lesbare Variante. Beispiele: Mitarbeiter:innen, Kolleg:innen, Expert:innen. Gut für digitale Texte.',
+            'Unterstrich': '<strong>Gender-Gap (_)</strong>: Klassische Form. Beispiele: Mitarbeiter_innen, Kolleg_innen, Expert_innen. Betont die Vielfalt.',
+            'Binnen-I': '<strong>Binnen-I</strong>: Traditionelle Form. Beispiele: MitarbeiterInnen, KollegInnen, ExpertInnen. Einfach, aber binär.',
+            'Doppelnennung': '<strong>Doppelnennung</strong>: Ausgeschrieben und eindeutig. Beispiele: Mitarbeiterinnen und Mitarbeiter, Kolleginnen und Kollegen.',
+            'Neutrale Formulierung': '<strong>Geschlechtsneutral</strong>: Vermeidet Geschlechtszuweisungen. Beispiele: Mitarbeitende, Studierende, Fachkräfte, Team.',
+            'Generisches Maskulinum mit Erklärung': '<strong>Mit Erklärung</strong>: Am Textanfang wird erklärt: "Aus Gründen der Lesbarkeit wird das generische Maskulinum verwendet. Alle Geschlechter sind gleichermaßen gemeint."',
+            'Keine Genderung': '<strong>Ohne Gender-Zeichen</strong>: Standardform ohne besondere Kennzeichnung. Der Text verwendet die übliche Schreibweise.'
+        };
+        
         // Navigation
         window.nextStep = function() {
             saveCurrentData();
@@ -693,6 +760,7 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
                     promptData.style = $('#field-style').val();
                     promptData.language = $('#field-language').val();
                     promptData.anrede = $('#field-anrede').val();
+                    promptData.gender = $('#field-gender').val();
                     promptData.citation = $('#field-citation').val();
                     promptData.sourcePosition = $('#field-source-position').val();
                     break;
@@ -747,15 +815,27 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
                 promptData.aiModel = value;
             } else if (type === 'language') {
                 $('#field-language').val(value);
-                // Zeige/Verstecke Anrede-Optionen
+                // Zeige/Verstecke Anrede- und Gender-Optionen
                 if (value === 'Deutsch') {
                     $('#anrede-section').slideDown();
+                    $('#gender-section').slideDown();
                 } else {
                     $('#anrede-section').slideUp();
+                    $('#gender-section').slideUp();
                     $('#field-anrede').val('');
+                    $('#field-gender').val('');
                 }
             } else if (type === 'anrede') {
                 $('#field-anrede').val(value);
+            } else if (type === 'gender') {
+                $('#field-gender').val(value);
+                // Zeige Gender-Info
+                if (genderInfo[value]) {
+                    $('#gender-info').html(genderInfo[value]);
+                    $('#gender-info').slideDown();
+                } else {
+                    $('#gender-info').slideUp();
+                }
             } else if (type === 'citation') {
                 $('#field-citation').val(value);
                 // Zeige Zitierstil-Info
@@ -865,9 +945,52 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
                 prompt += "ANREDE: Verwende die " + promptData.anrede + ".\n";
             }
             
+            // Gender-Anweisungen NEU
+            if (promptData.language === 'Deutsch' && promptData.gender) {
+                prompt += "\nGENDER-SCHREIBWEISE: ";
+                
+                switch(promptData.gender) {
+                    case 'Gendersternchen':
+                        prompt += "Verwende das Gendersternchen (*) für geschlechtergerechte Sprache.\n";
+                        prompt += "Beispiele: Mitarbeiter*innen, Kolleg*innen, Expert*innen, Kund*innen.\n";
+                        break;
+                    case 'Doppelpunkt':
+                        prompt += "Verwende den Gender-Doppelpunkt (:) für geschlechtergerechte Sprache.\n";
+                        prompt += "Beispiele: Mitarbeiter:innen, Kolleg:innen, Expert:innen, Kund:innen.\n";
+                        break;
+                    case 'Unterstrich':
+                        prompt += "Verwende den Gender-Unterstrich (_) für geschlechtergerechte Sprache.\n";
+                        prompt += "Beispiele: Mitarbeiter_innen, Kolleg_innen, Expert_innen, Kund_innen.\n";
+                        break;
+                    case 'Binnen-I':
+                        prompt += "Verwende das Binnen-I für geschlechtergerechte Sprache.\n";
+                        prompt += "Beispiele: MitarbeiterInnen, KollegInnen, ExpertInnen, KundInnen.\n";
+                        break;
+                    case 'Doppelnennung':
+                        prompt += "Verwende die vollständige Doppelnennung beider Geschlechter.\n";
+                        prompt += "Beispiele: Mitarbeiterinnen und Mitarbeiter, Kolleginnen und Kollegen, Expertinnen und Experten.\n";
+                        prompt += "Variiere die Reihenfolge (mal weiblich zuerst, mal männlich).\n";
+                        break;
+                    case 'Neutrale Formulierung':
+                        prompt += "Verwende geschlechtsneutrale Formulierungen.\n";
+                        prompt += "Beispiele: Mitarbeitende, Studierende, Fachkräfte, Team, Belegschaft, Führungskräfte.\n";
+                        prompt += "Vermeide geschlechtsspezifische Bezeichnungen wo möglich.\n";
+                        break;
+                    case 'Generisches Maskulinum mit Erklärung':
+                        prompt += "Verwende das generische Maskulinum.\n";
+                        prompt += "WICHTIG: Füge am Textanfang folgende Erklärung ein:\n";
+                        prompt += '"Hinweis: Aus Gründen der besseren Lesbarkeit wird im folgenden Text das generische Maskulinum verwendet. Sämtliche Personenbezeichnungen gelten gleichermaßen für alle Geschlechter (m/w/d)."\n';
+                        break;
+                    case 'Keine Genderung':
+                        prompt += "Verwende die Standardform ohne besondere Gender-Kennzeichnung.\n";
+                        prompt += "Schreibe in der üblichen, traditionellen Form.\n";
+                        break;
+                }
+            }
+            
             // Länge
             if (promptData.length) {
-                prompt += "LÄNGE: " + promptData.length + "\n";
+                prompt += "\nLÄNGE: " + promptData.length + "\n";
             }
             
             // SEO-Keywords
@@ -982,7 +1105,9 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
                 $('.kpb-option-card').removeClass('selected');
                 $('#citation-section').hide();
                 $('#anrede-section').hide();
+                $('#gender-section').hide();
                 $('#citation-info').hide();
+                $('#gender-info').hide();
                 $('#seo-section').hide();
                 showStep(1);
             }
@@ -1008,3 +1133,4 @@ textarea.kpb-input-field { min-height: 120px; resize: vertical; line-height: 1.6
 }
 
 new KI_Prompt_Builder_Enhanced();
+            
